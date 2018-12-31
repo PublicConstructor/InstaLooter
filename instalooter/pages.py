@@ -73,7 +73,25 @@ class PageIterator(typing.Iterator[typing.Dict[typing.Text, typing.Any]]):
                     yield data['data']
             except KeyError as e:
                 if data.get('message') == 'rate limited':
-                    raise RuntimeError("Query rate exceeded (wait before next run)")
+                    # raise RuntimeError("Query rate exceeded (wait before next run)")
+                    print("Query rate exceeded (wait before next run)")
+                    
+                    # TODO: Sync between threads
+                    print('Old IP = ', session.get("http://httpbin.org/ip").text)
+
+                    print("Attempting Tor NEWNYM")
+                    from stem import Signal
+                    from stem.control import Controller
+                    with Controller.from_port(port = 9051) as controller:
+                        with open('torpassword.txt') as f:
+                            controller.authenticate(password=f.readline())
+                        controller.signal(Signal.NEWNYM)
+
+                    time.sleep(1)
+
+                    session.close()
+                    print('New IP = ', session.get("http://httpbin.org/ip").text)
+
                 time.sleep(10)
             # Sleep before next query
             time.sleep(self.INTERVAL)

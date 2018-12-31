@@ -716,11 +716,27 @@ class ProfileLooter(InstaLooter):
                 does not follow that account).
 
         """
+        # Create new tor session
+        self.pages_session = self._init_session()
+
+        # Set a fake User-Agent
+        if self.pages_session.headers['User-Agent'].startswith('python-requests'):
+            self.pages_session.headers['User-Agent'] = self._user_agents.firefox
+
+        # # Get CSRFToken and RHX
+        # with self.pages_session.get('https://www.instagram.com/') as res:
+        #     token = get_shared_data(res.text)['config']['csrf_token']
+        #     self.pages_session.headers['X-CSRFToken'] = token
+        #     self.rhx = get_shared_data(res.text)['rhx_gis']
+
+        self.pages_session.proxies = {'http':  'socks5://127.0.0.1:9050',
+                                      'https': 'socks5://127.0.0.1:9050'}
+        print('Pages IP = ', self.pages_session.get("http://httpbin.org/ip").text)
         if self._owner_id is None:
-            it = ProfileIterator.from_username(self._username, self.session)
+            it = ProfileIterator.from_username(self._username, self.pages_session)
             self._owner_id = it.owner_id
             return it
-        return ProfileIterator(self._owner_id, self.session, self.rhx)
+        return ProfileIterator(self._owner_id, self.pages_session, self.rhx)
 
 
 class HashtagLooter(InstaLooter):
