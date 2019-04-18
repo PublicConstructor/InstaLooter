@@ -719,9 +719,9 @@ class ProfileLooter(InstaLooter):
         # Create new tor session
         self.pages_session = self._init_session()
 
-        # Set a fake User-Agent
+        # Set the default webbrowser user agent
         if self.pages_session.headers['User-Agent'].startswith('python-requests'):
-            self.pages_session.headers['User-Agent'] = self._user_agents.firefox
+            self.pages_session.headers['User-Agent'] = self._user_agent
 
         # # Get CSRFToken and RHX
         # with self.pages_session.get('https://www.instagram.com/') as res:
